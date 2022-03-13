@@ -3,28 +3,19 @@ const small_body = [WORK, WORK ,WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MO
 const middle_body = [WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE];
 
 module.exports = {
-    run: function(roomName) {
+    run: function(roomName, spawnRoomName, creepNum, hits) {
         const creepName = 'creep_' + Game.time;
         const body = middle_body;
         var curCreepNum = 0;
-        var creepNum = 0;
-        var len = Game.rooms[roomName].find(FIND_CONSTRUCTION_SITES).length
-        if(len > 0) {
-            creepNum = 1;
-        }
-        if(len > 5) {
-            creepNum = 3;
-        }
-        if(creepNum == 0) return;
         for(var name in Game.creeps){
             creep = Game.creeps[name];
-            if(creep.memory.task == 'builder' && creep.memory.room == roomName) {
+            if(creep.memory.task == 'defenceBuilder' && creep.memory.room == roomName) {
                 curCreepNum ++;
-                creepBuild(creep);
+                creepBuild(creep, hits);
             }
         }
         if(curCreepNum < creepNum) {
-            autoSpawnCreep(creepName, roomName, roomName, autoScale(roomName));
+            autoSpawnCreep(creepName, spawnRoomName, roomName, autoScale(spawnRoomName));
         }
     } 
 }
@@ -41,25 +32,48 @@ function autoScale(roomName) {
     return body;
 }
 
-function creepBuild(creep) {
+function creepBuild(creep, hits) {
+    if(!creep.pos.inRangeTo(new RoomPosition(25, 25, creep.memory.room),24)) {
+        creep.moveTo(new RoomPosition(25, 25, creep.memory.room));
+        return;
+    }
+    
     if(creep.store.getFreeCapacity() == 0) creep.memory.state = 1;
     if(creep.store.getUsedCapacity() == 0) creep.memory.state = 0;
     
     if(creep.memory.state == 1) {
-        const target = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
-        if(creep.build(target) == ERR_NOT_IN_RANGE) {
+        //console.log(creep.memory.target);
+        if(creep.memory.target == undefined || Game.time % 1000 == 0) {
+            let infra = creep.room.find(FIND_STRUCTURES, {
+                filter: (structure) => {
+                    return (structure.structureType == STRUCTURE_WALL && structure.hits < hits) || (structure.structureType == STRUCTURE_RAMPART && structure.hits < hits);
+                }
+            });
+            let idx = _.random(infra.length - 1);
+            creep.memory.target = infra[idx].id;
+        }
+        let target = Game.getObjectById(creep.memory.target);
+        if(creep.repair(target) == ERR_NOT_IN_RANGE) {
             creep.moveTo(target, {visualizePathStyle: {stroke: '#ffffff'}});
         }
     }
     else{
-        if(creep.room.storage) withdrawFromStorage(creep);
-        else withdrawFromSpawn(creep);
+        if(creep.room.storage && creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 10000) withdrawFromStorage(creep);
+        else creepHarvest(creep);
+        
+    }
+}
+
+function creepHarvest(creep) {
+    let sources = creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
+    if(creep.harvest(sources) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(sources);
     }
 }
 
 function withdrawFromSpawn(creep) {
     var spawn = getAvaliableSpawn(creep.room.name);
-    if(spawn && spawn.store[RESOURCE_ENERGY] > 150) {
+    if(spawn && spawn.store[RESOURCE_ENERGY] > 100) {
         if(creep.withdraw(spawn, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
             creep.moveTo(spawn);
         }
@@ -88,6 +102,6 @@ function getAvaliableSpawn(room) {
 function autoSpawnCreep(creepName, spawnRoomName, roomName, body) {
     var spawn = getAvaliableSpawn(spawnRoomName);
     if(spawn) {
-        spawn.spawnCreep(body, creepName, {memory: {task: 'builder', room: roomName}});
+        spawn.spawnCreep(body, creepName, {memory: {task: 'defenceBuilder', room: roomName}});
     }
 }

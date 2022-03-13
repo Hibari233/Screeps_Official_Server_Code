@@ -31,9 +31,7 @@ function clean(creep){
                 structure.structureType == STRUCTURE_TOWER ||
                 structure.structureType == STRUCTURE_STORAGE ||
                 structure.structureType == STRUCTURE_TERMINAL ||
-                structure.structureType == STRUCTURE_LINK ||
-                structure.structureType == STRUCTURE_WALL ||
-                structure.structureType == STRUCTURE_RAMPART);
+                structure.structureType == STRUCTURE_LINK);
         }
     });
     let sites = creep.room.find(FIND_CONSTRUCTION_SITES);

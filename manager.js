@@ -37,7 +37,7 @@ function creepManage(creep){
         fillInfrastructures(creep);
     }
     else {
-        withdrawFromStorage(creep);
+        if(creep.room.storage && creep.room.storage.store.energy > 0) withdrawFromStorage(creep);
     }
 }
 
@@ -46,11 +46,22 @@ function fillInfrastructures(creep) {
         filter: (structure) => {
             return (((structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0) ||
                     (structure.structureType == STRUCTURE_TOWER && structure.store.getUsedCapacity(RESOURCE_ENERGY) <= 500) ||
-                    (structure.structureType == STRUCTURE_TERMINAL && structure.store.getUsedCapacity(RESOURCE_ENERGY) <= 2000) );
+                    (structure.structureType == STRUCTURE_TERMINAL && structure.store.getUsedCapacity(RESOURCE_ENERGY) <= 10000) ||
+                    (structure.structureType == STRUCTURE_LAB && structure.store.getUsedCapacity(RESOURCE_ENERGY) <= 1000) || 
+                    (structure.structureType == STRUCTURE_POWER_SPAWN && structure.store.getUsedCapacity(RESOURCE_ENERGY) <= 3000)) ;
         }
     });
     if(creep.transfer(infrastructure, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
         creep.moveTo(infrastructure);
+    }
+}
+
+function withdrawFromSpawn(creep) {
+    var spawn = getAvaliableSpawn(creep.room.name);
+    if(spawn) {
+        if(creep.withdraw(spawn, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(spawn);
+        }
     }
 }
 
@@ -84,9 +95,7 @@ function getAvaliableSpawn(room) {
 
 function autoSpawnCreep(creepName, spawnRoomName, body) {
     var spawn = getAvaliableSpawn(spawnRoomName);
-    console.log(body);
     if(spawn) {
         spawn.spawnCreep(body, creepName, {memory: {task: 'manager', roomName: spawnRoomName}});
     }
 }
-

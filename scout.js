@@ -9,8 +9,13 @@ module.exports = {
             autoSpawnCreep(creepName, spawnRoomName);
         }
         else {
-            if(!creep.pos.inRangeTo(new RoomPosition(25, 25, roomName),20)) creep.moveTo(new RoomPosition(25, 25, roomName));
+            if(!creep.pos.inRangeTo(new RoomPosition(25, 25, roomName),23)) creep.moveTo(new RoomPosition(25, 25, roomName));
             else {
+                if(creep.room.controller) {
+                    if(creep.signController(creep.room.controller, "🐦 Warning: fully automated murder zone 🐦") == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(creep.room.controller);
+                    }
+                }
                 var hostiles = Game.rooms[roomName].find(FIND_HOSTILE_CREEPS);
                 var PC_hostiles = Game.rooms[roomName].find(FIND_HOSTILE_POWER_CREEPS);
                 if(hostiles.length != 0 || PC_hostiles.length != 0) {

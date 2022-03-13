@@ -16,15 +16,16 @@ module.exports = {
                 creepControl(creep, controller);
             }
         }
-        if(curCreepNum < creepNum && Game.rooms[roomName].storage.store.energy >= 10000) {
+        if(curCreepNum < creepNum) {
             autoSpawnCreep(creepName, roomName, roomName, body);
         }
     }
 }
 
-function autoScale(roomName) {
+function rollScale(roomName) {
     let room = Game.rooms[roomName];
-    if(room.controller.level == 8) return [WORK, CARRY, MOVE];
+    if(room.controller.level == 8 && room.controller.ticksToDowngrade <= 100000) return [WORK, CARRY, MOVE];
+    if(room.controller.level == 8) return [];
     let body = [WORK, CARRY, MOVE];
     let part = [WORK];
         let parts = 1;
@@ -35,17 +36,32 @@ function autoScale(roomName) {
         return body;
 }
 
+
+function autoScale(roomName) {
+    let room = Game.rooms[roomName];
+    if(room.controller.level == 8 && room.controller.ticksToDowngrade <= 100000) return [WORK, CARRY, MOVE];
+    if(room.controller.level == 8) return [];
+    let part = [WORK, CARRY, MOVE];
+    let body = [WORK, CARRY, MOVE];
+        let parts = 1;
+        while(200 * parts <= room.energyCapacityAvailable - 200 && body.length + part.length <= 50){
+            body = body.concat(part);
+            parts ++;
+        }
+        return body;
+}
+
 function creepControl(creep, controller) {
     var stateControl = 1;
-    if(creep.store.getUsedCapacity() == 6 || creep.store.getUsedCapacity() == 0) stateControl = 0;
+    if(creep.store.getUsedCapacity() == 0) stateControl = 0;
     if(stateControl == 1) {
-        withdrawFromTerminal(creep);
         if(creep.upgradeController(controller) == ERR_NOT_IN_RANGE) {
             creep.moveTo(controller, {visualizePathStyle: {stroke: '#ffffff'}});
         }
     }
     else {
-        if(creep.room.terminal.store.getUsedCapacity(RESOURCE_ENERGY) > 0) withdrawFromTerminal(creep);
+        if(creep.room.terminal && creep.room.terminal.store.energy > 10000) withdrawFromTerminal(creep);
+        else if(creep.room.storage && creep.room.storage.store.energy > 1000) withdrawFromStorage(creep);
         else withdrawFromSpawn(creep);
     }
 }
@@ -72,8 +88,10 @@ function withdrawFromStorage(creep){
 
 function withdrawFromTerminal(creep){
     let terminal = creep.room.terminal;
+    let controller = creep.room.controller;
     //if(terminal.store.energy <= 10000) return;
     if(terminal) {
+        creep.upgradeController(controller);
         if(creep.withdraw(terminal, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
             creep.moveTo(terminal);
         }

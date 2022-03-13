@@ -9,8 +9,15 @@ module.exports = {
     run: function(roomName, sourceID, creepNum) {
         const creepName = 'creep_' + Game.time;
         let body = autoScale(roomName);
-        
-        
+        if(Game.time % 500 == 0 && Game.rooms[roomName].controller.level <= 4){
+            console.log('check room ' + roomName + ' drone status');
+            let cnt = 0;
+            for(let creepN in Game.creeps){
+                if(creep.memory.task == 'drone' && creep.room == Game.rooms[roomName]) cnt++;
+            }
+            console.log(cnt);
+            if(cnt == 0) body = smartScale(roomName);
+        }
         var curCreepNum = 0;
         for(var name in Game.creeps) {
             creep = Game.creeps[name];
@@ -24,6 +31,18 @@ module.exports = {
             autoSpawnCreep(creepName, roomName, sourceID, body);
         }
     }
+}
+
+function smartScale(roomName) {
+    let room = Game.rooms[roomName];
+    let part = [WORK, CARRY, MOVE];
+    let body = [WORK, CARRY, MOVE];
+        let parts = 1;
+        while(200 * parts <= room.energyAvailable - 200 && body.length + part.length <= 50){
+            body = body.concat(part);
+            parts ++;
+        }
+        return body;
 }
 
 function autoScale(roomName) {
@@ -50,14 +69,15 @@ function creepHarvest(creep, source) {
         }
     }
     else {
-        transferToStorage(creep);
+        if(creep.room.storage) transferToStorage(creep);
+        else transferToSpawn(creep);
     }
 }
 
 function transferToSpawn(creep) {
     var spawn = creep.pos.findClosestByPath(FIND_STRUCTURES, {
         filter: (structure) => {
-            return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+            return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN || structure.structureType == STRUCTURE_TOWER) && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
         }
     });
     if(spawn) {

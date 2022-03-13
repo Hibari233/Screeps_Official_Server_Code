@@ -5,7 +5,7 @@ const STATE_CLEAR = 3;
 const body = [CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE,];
 
 
-let room, labs, creep, amount;
+let room, labs, creep;
 
 module.exports = {
     run: function (roomName) {
@@ -25,27 +25,17 @@ module.exports = {
         // STATE_FILL 为填空lab当且仅当lab全空或lab内矿物类型正确
         // STATE_CLEAR 为清空lab
         // STATE_COMPLETE 为所有lab填空完毕并且矿物类型正确
-        if(state == STATE_CLEAR && checkLabClear(roomName) == true){
-            state = STATE_FILL;
-            console.log('Room ' + roomName + ' state change to STATE_FILL');
+        let isClear = checkLabClear(roomName);
+        let isFull = checkLabFull(roomName);
+        let isStatus = checkLabStatus(roomName);
+        if(!Game.tick % 50){
+            if(((isStatus == true && isFull == false) || isClear == true)) state = STATE_FILL;
+            else if(isStatus == true && isFull == true && isClear == false) state = STATE_COMPLETE;
+            else state = STATE_CLEAR;
         }
-
-        if(state == STATE_FILL && checkLabStatus(roomName) == false && checkLabClear(roomName) == false){
-            state = STATE_CLEAR;
-            console.log('Room ' + roomName + ' state change to STATE_CLEAR');
-        }
-
-        if(state == STATE_FILL && checkLabFull(roomName) == true){
-            state = STATE_COMPLETE;
-            console.log('Room ' + roomName + ' state change to STATE_COMPLETE');
-        }
-
-        if(state == STATE_COMPLETE && checkLabFull(roomName) == false){
-            state = STATE_FILL;
-            console.log('Room ' + roomName + ' state change to STATE_FILL');
-        }
-
+    
         Memory.boost[roomName].state = state;
+        //console.log(state);
 
         // Run state
         if(state == STATE_FILL){
@@ -56,17 +46,19 @@ module.exports = {
                 for(let i = 0; i < labs.length; i ++){
                     let withdrawTarget;
                     let type = Memory.boost[roomName].material[i];
+                    let amount = labs[i].store.getCapacity(type);
                     if(labs[i].store[type] < labs[i].store.getCapacity(type)){
                         if(room.storage.store[type]) withdrawTarget = room.storage;
                         else if (room.terminal.store[type]) withdrawTarget = room.terminal;
+                        else if(creep.store[type] > 0) withdrawTarget = null;
                         else {
                             console.log('Room ' + roomName + ' has no storage or terminal to withdraw ' + type);
                             continue;
                         }
                         if(labs[i].store[type]) amount -= labs[i].store[type];
                         if(creep.store[type] >= amount) withdrawTarget = null;
-                        WAT(creep, withdrawTarget, labs[i], type, amount);
-                        if(amount > 0) break;
+                        console.log(type);
+                        if(amount > 0) {WAT(creep, withdrawTarget, labs[i], type, amount); break;}
                     }
                 }
             }
@@ -79,9 +71,11 @@ module.exports = {
             else {
                 for(let i = 0; i < labs.length; i ++) {
                     if(labs[i].mineralType){
-                        WAT(creep, labs[i], room.terminal, lab.mineralType, 3000);
+                        //console.log(labs[i].mineralType);
+                        WAT(creep, labs[i], room.terminal, labs[i].mineralType, 3000);
                     }
                 }
+                if(isClear == true) WAT(creep, null, room.terminal, null, null);
             }
         }
 
@@ -158,7 +152,7 @@ function initMemory(roomName) {
     if (Memory.boost[roomName].labs.length >= 3) {
         return true;
     } else {
-        console.log('ERROR: Room ' + roomName + ' must have more than 3 labs');
+        //console.log('ERROR: Room ' + roomName + ' must have more than 3 labs');
         return false;
     }
 }
@@ -181,7 +175,11 @@ function autoSpawnCreep(creepName) {
 }
 
 function WAT(creep, withdrawTarget, transferTarget, type, amount) {
+    //console.log(withdrawTarget + ' ' + transferTarget + ' ' + type + ' ' + amount);
     if (_.sum(creep.store) && creep.store[type] != _.sum(creep.store)) {
+        //console.log(type);
+        //console.log(creep.store[type]);
+        //console.log(creep.store[RESOURCE_CATALYZED_GHODIUM_ALKALIDE])
         creep.moveTo(creep.room.storage)
         if (creep.pos.isNearTo(creep.room.storage)) {
             for (var resourceType in creep.store) {
@@ -193,7 +191,7 @@ function WAT(creep, withdrawTarget, transferTarget, type, amount) {
         return;
     }
     amount = Math.min(amount, creep.store.getFreeCapacity(type));
-    if (_.sum(creep.store) == 0) {
+    if (_.sum(creep.store) == 0 && withdrawTarget) {
         amount = Math.min(amount, withdrawTarget.store[type]);
         creep.moveTo(withdrawTarget)
         if (creep.pos.isNearTo(withdrawTarget)) {
