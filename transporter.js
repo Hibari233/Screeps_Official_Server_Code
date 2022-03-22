@@ -1,4 +1,10 @@
-
+/**
+ * Transport goods from one to another
+ * 
+ * @param str 
+ * @param arr
+ * @param 
+ */
 module.exports = {
     run: function(transferTarget, withdrawTarget, taskName, roomName, spawnRoomName, creepNum, type, tickLimit) {
         const creepName = 'creep_transporter_' + taskName + ' ' + Game.time;

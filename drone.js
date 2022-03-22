@@ -9,11 +9,11 @@ module.exports = {
     run: function(roomName, sourceID, creepNum) {
         const creepName = 'creep_' + Game.time;
         let body = autoScale(roomName);
-        if(Game.time % 500 == 0 && Game.rooms[roomName].controller.level <= 4){
+        if(Game.time % 300 == 0 && Game.rooms[roomName].controller.level <= 5){
             console.log('check room ' + roomName + ' drone status');
             let cnt = 0;
-            for(let creepN in Game.creeps){
-                if(creep.memory.task == 'drone' && creep.room == Game.rooms[roomName]) cnt++;
+            for(let i in Game.creeps){
+                if(Game.creeps[i].memory.task == 'drone' && Game.creeps[i].room == Game.rooms[roomName]) cnt++;
             }
             console.log(cnt);
             if(cnt == 0) body = smartScale(roomName);

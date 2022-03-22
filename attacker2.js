@@ -8,6 +8,8 @@ module.exports = {
         let worker = Game.creeps[workerName];
         let healer = Game.creeps[healerName];
         if(worker && healer){
+            if(checkCreepAllBoosted(worker) == false) {autoBoost(worker); return;}
+            if(checkCreepAllBoosted(healer) == false) {autoBoost(healer); return;}
             creepAttack(worker, healer, flagName);
         }
         else{
@@ -111,4 +113,30 @@ function autoBoostCreep(creep) {
     for (var lab in labs) {
         labs[lab].boostCreep(creep);
     }
+}
+
+function autoBoost(creep){
+    if(creep.memory.boost == undefined) creep.memory.boost = 0;
+    var labs = creep.room.find(FIND_STRUCTURES, {
+        filter: (structure) => {
+            return structure.structureType == STRUCTURE_LAB;
+        }
+    });
+    if(creep.memory.boost == 10) creep.memory.boost = 0;
+    if(labs && creep){
+        if(checkCreepAllBoosted(creep) == false) creep.moveTo(labs[creep.memory.boost]);
+        if(creep.pos.isNearTo(labs[creep.memory.boost].pos) == true) {
+            labs[creep.memory.boost].boostCreep(creep);
+            creep.memory.boost++;
+        }
+    }
+}
+
+function checkCreepAllBoosted(creep){
+    for(let i in creep.body){
+        if(creep.body[i].boost == undefined){
+            return false;
+        }
+    }
+    return true;
 }

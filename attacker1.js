@@ -5,6 +5,7 @@ module.exports = {
         const body = parse('12t5r10m23h');
         let creep = Game.creeps[creepName];
         if(creep){
+            if(checkCreepAllBoosted(creep) == false) {autoBoost(creep); return;}
             creepAttack(creep, flagName);
         }
         else{
@@ -15,6 +16,8 @@ module.exports = {
 
 function creepAttack(creep, flagName) {
     creep.heal(creep);
+    if(Game.time % 2) creep.say("圣嘉然会原谅你，", true);
+    else creep.say("但嘉心糖不会。", true);
     let flag = Game.flags[flagName];
     if(flag == undefined){
         console.log('CANNOT FIND FLAG ' + flagName);
@@ -87,4 +90,30 @@ function autoBoostCreep(creep) {
     for (var lab in labs) {
         labs[lab].boostCreep(creep);
     }
+}
+
+function autoBoost(creep){
+    if(creep.memory.boost == undefined) creep.memory.boost = 0;
+    var labs = creep.room.find(FIND_STRUCTURES, {
+        filter: (structure) => {
+            return structure.structureType == STRUCTURE_LAB;
+        }
+    });
+    if(creep.memory.boost == 10) creep.memory.boost = 0;
+    if(labs && creep){
+        if(checkCreepAllBoosted(creep) == false) creep.moveTo(labs[creep.memory.boost]);
+        if(creep.pos.isNearTo(labs[creep.memory.boost].pos) == true) {
+            labs[creep.memory.boost].boostCreep(creep);
+            creep.memory.boost++;
+        }
+    }
+}
+
+function checkCreepAllBoosted(creep){
+    for(let i in creep.body){
+        if(creep.body[i].boost == undefined){
+            return false;
+        }
+    }
+    return true;
 }

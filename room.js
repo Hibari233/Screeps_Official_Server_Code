@@ -36,7 +36,7 @@ module.exports = {
         let sources = Game.rooms[roomName].find(FIND_SOURCES);
         for(let i in sources){
             let num = 0;
-            if(level <= 6) num = sources[i].getAvaliablePosition() * droneNum;
+            if(level <= 4) num = sources[i].getAvaliablePosition() * droneNum;
             else num = droneNum;
             drone.run(roomName, sources[i].id, num);
         }

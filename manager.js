@@ -38,6 +38,7 @@ function creepManage(creep){
     }
     else {
         if(creep.room.storage && creep.room.storage.store.energy > 0) withdrawFromStorage(creep);
+        else if(creep.room.terminal && creep.room.terminal.store.energy > 10000) withdrawFromTerminal(creep);
     }
 }
 
