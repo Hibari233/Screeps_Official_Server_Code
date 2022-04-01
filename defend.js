@@ -86,6 +86,7 @@ function roomRun(room){
     }
     for(var i=0;i<=0;i++){
         const attackerName = room.name + '_attack_'+i;
+        if(Game.creeps[attackerName] && checkCreepAllBoosted(Game.creeps[attackerName]) == false) {autoBoost(Game.creeps[attackerName]); return;}
         runAttack(room,attackerName)
     }
     
@@ -100,7 +101,7 @@ function roomRun(room){
         }
         return;
     }
-    
+    if(Game.creeps[raAttackerName] && checkCreepAllBoosted(Game.creeps[raAttackerName]) == false) {autoBoost(Game.creeps[raAttackerName]); return;}
     if(raAttacker.pos.inRangeTo(enemy,3)){
         raAttacker.rangedAttack(enemy)
     }else{
@@ -196,6 +197,32 @@ function outBfs(startPos){
             if(npos.lookFor(LOOK_STRUCTURES).filter((o)=>(o.structureType == STRUCTURE_RAMPART)).length)continue;
             CostMatrix[pos.roomName].set(x,y,255)
             positions.push(npos);
+        }
+    }
+}
+
+function checkCreepAllBoosted(creep){
+    for(let i in creep.body){
+        if(creep.body[i].boost == undefined){
+            return false;
+        }
+    }
+    return true;
+}
+
+function autoBoost(creep){
+    if(creep.memory.boost == undefined) creep.memory.boost = 0;
+    var labs = creep.room.find(FIND_STRUCTURES, {
+        filter: (structure) => {
+            return structure.structureType == STRUCTURE_LAB;
+        }
+    });
+    if(creep.memory.boost == 10) creep.memory.boost = 0;
+    if(labs && creep){
+        if(checkCreepAllBoosted(creep) == false) creep.moveTo(labs[creep.memory.boost]);
+        if(creep.pos.isNearTo(labs[creep.memory.boost].pos) == true) {
+            labs[creep.memory.boost].boostCreep(creep);
+            creep.memory.boost++;
         }
     }
 }

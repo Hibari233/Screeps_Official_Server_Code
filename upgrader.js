@@ -6,12 +6,34 @@ const guntong_body = [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK
 module.exports = {
     run: function(roomName, creepNum) {
         const creepName = 'creep_' + Game.time;
-        const body = autoScale(roomName);
+        let body = autoScale(roomName);
         const controller = Game.rooms[roomName].controller;
+        const terminal = Game.rooms[roomName].terminal;
+        if(terminal && terminal.pos.inRangeTo(controller, 2) && controller.level < 8) {
+            if(Game.time % 30 == 0) console.log('Room: ' + roomName + ' level up using terminal');
+            body = rollScale(roomName);
+            creepNum = 6;
+            if(terminal.store.energy < 20000) {
+                console.log(roomName + ' is buying energy');
+                const amountToBuy = terminal.store.energy, maxTransferEnergyCost = amountToBuy / 2;
+                const orders = Game.market.getAllOrders({type: ORDER_SELL, resourceType: RESOURCE_ENERGY});
+
+                for(let i=0; i<orders.length; i++) {
+                    const transferEnergyCost = Game.market.calcTransactionCost(
+                        amountToBuy, roomName, orders[i].roomName);
+
+                    if(transferEnergyCost < maxTransferEnergyCost) {
+                        Game.market.deal(orders[i].id, amountToBuy, roomName);
+                        break;
+                    }
+                }
+            }
+        }
         var curCreepNum = 0;
         for(var name in Game.creeps) {
             creep = Game.creeps[name];
             if(creep.memory.task == 'upgrader' && creep.memory.room == roomName){
+                if(terminal && terminal.pos.inRangeTo(controller, 2)) creep.memory.dontPullMe = true;
                 curCreepNum ++;
                 creepControl(creep, controller);
             }
@@ -58,6 +80,7 @@ function creepControl(creep, controller) {
         if(creep.upgradeController(controller) == ERR_NOT_IN_RANGE) {
             creep.moveTo(controller, {visualizePathStyle: {stroke: '#ffffff'}});
         }
+        if(creep.room.terminal && creep.room.terminal.pos.inRangeTo(controller, 2)) withdrawFromTerminal(creep);
     }
     else {
         if(creep.room.terminal && creep.room.terminal.store.energy > 10000) withdrawFromTerminal(creep);

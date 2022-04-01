@@ -28,14 +28,13 @@ module.exports = {
         let isClear = checkLabClear(roomName);
         let isFull = checkLabFull(roomName);
         let isStatus = checkLabStatus(roomName);
-        if(!Game.tick % 50){
+        if(Game.time % 3 == 0){
             if(((isStatus == true && isFull == false) || isClear == true)) state = STATE_FILL;
             else if(isStatus == true && isFull == true && isClear == false) state = STATE_COMPLETE;
             else state = STATE_CLEAR;
         }
-    
+        
         Memory.boost[roomName].state = state;
-        //console.log(state);
 
         // Run state
         if(state == STATE_FILL){
@@ -52,7 +51,7 @@ module.exports = {
                         else if (room.terminal.store[type]) withdrawTarget = room.terminal;
                         else if(creep.store[type] > 0) withdrawTarget = null;
                         else {
-                            console.log('Room ' + roomName + ' has no storage or terminal to withdraw ' + type);
+                            if(Game.time % 20 == 0) console.log('Room ' + roomName + ' has no storage or terminal to withdraw ' + type);
                             continue;
                         }
                         if(labs[i].store[type]) amount -= labs[i].store[type];
@@ -97,7 +96,7 @@ function checkLabStatus(roomName) {
     var labs = Memory.boost[roomName]['labs'];
     var typecorrect = true;
     for(let i = 0; i < labs.length; i ++){
-        if(labs[i].mineralType != Memory.boost[roomName].material[i]){
+        if(labs[i].mineralType != Memory.boost[roomName].material[i] && labs[i].mineralType != undefined){
             typecorrect = false;
         }
     }
@@ -107,9 +106,12 @@ function checkLabStatus(roomName) {
 function checkLabClear(roomName){
     var labs = Memory.boost[roomName]['labs'];
     var allclear = true;
-    labs.forEach(lab => {
-        if (lab.mineralType != undefined) allclear = false;
-    });
+    for(let i = 0; i < labs.length; i ++){
+        //console.log(labs[i] + " : " + labs[i].mineralType);
+        if(Game.getObjectById(labs[i]).mineralType != undefined){
+            allclear = false;
+        }
+    }
     return allclear;
 }
 

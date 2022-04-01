@@ -31,6 +31,7 @@ module.exports = {
         let level = Game.rooms[roomName].controller.level;
         if(level <= 4) droneNum = 2, controlNum = 5;
         if(level >= 4 && level <= 6 && room.storage) droneNum = 2, controlNum = 3;
+        if(level >= 4 && level <= 6 && room.storage && room.terminal) droneNum = 1, controlNum = 3;
         if(level >= 7) droneNum = 1, controlNum = 3;
         if(level == 8) droneNum = 1, controlNum = 1;
         let sources = Game.rooms[roomName].find(FIND_SOURCES);

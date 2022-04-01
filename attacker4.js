@@ -1,6 +1,6 @@
 let cache={}; // 用小队队长的id做队伍的id?
 
-const squadMoveCache=5; // 跨房需保证该设置>=2
+const squadMoveCache=3; // 跨房需保证该设置>=2
 
 module.exports = {
     run: function(flagName, flagStandbyName, flagAttackName, taskName, roomName, status) {

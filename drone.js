@@ -9,7 +9,7 @@ module.exports = {
     run: function(roomName, sourceID, creepNum) {
         const creepName = 'creep_' + Game.time;
         let body = autoScale(roomName);
-        if(Game.time % 300 == 0 && Game.rooms[roomName].controller.level <= 5){
+        if(Game.time % 300 == 0 && Game.rooms[roomName].controller.level <= 6){
             console.log('check room ' + roomName + ' drone status');
             let cnt = 0;
             for(let i in Game.creeps){

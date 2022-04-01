@@ -12,7 +12,7 @@ module.exports = {
         if(len > 0) {
             creepNum = 1;
         }
-        if(len > 5) {
+        if(len > 10) {
             creepNum = 3;
         }
         if(creepNum == 0) return;

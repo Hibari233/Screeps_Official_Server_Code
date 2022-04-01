@@ -1,10 +1,4 @@
-/**
- * Transport goods from one to another
- * 
- * @param str 
- * @param arr
- * @param 
- */
+    
 module.exports = {
     run: function(transferTarget, withdrawTarget, taskName, roomName, spawnRoomName, creepNum, type, tickLimit) {
         const creepName = 'creep_transporter_' + taskName + ' ' + Game.time;
@@ -79,7 +73,7 @@ function creepTransport(creep, transferTarget, withdrawTarget, roomName, type, t
         let target = Game.getObjectById(withdrawTarget);
         let ttarget = Game.getObjectById(transferTarget);
         if(target == undefined){
-            console.log('CANNOT FIND TARGET OR HAVE NO VISUAL ON TARGET');
+            console.log(creep.name + ': CANNOT FIND TARGET OR HAVE NO VISUAL ON TARGET');
             return;
         }
         if(type == 'ALL') {
