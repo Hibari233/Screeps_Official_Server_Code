@@ -12,6 +12,8 @@ const warBoost = require('warBoost');
 require('optimize');
 const transporter = require('transporter');
 require('source.prototype');
+const starter = require('starter');
+const linkCtrl = require('linkCtrl');
 
 module.exports = {
     run: function(roomName) {
@@ -27,13 +29,24 @@ module.exports = {
                 console.log(e.stack);
             }
         }
+        if(room.controller.level <= 3){
+            let sources = Game.rooms[roomName].find(FIND_SOURCES);
+            for(let i in sources){
+                let num = sources[i].getAvaliablePosition() * 2;
+                for(let j = 0; j < num; j ++){
+                    starter.run(roomName, sources[i].id + j, sources[i].id);
+                }
+            }
+            return;
+        }
         let droneNum, controlNum;
         let level = Game.rooms[roomName].controller.level;
         if(level <= 4) droneNum = 2, controlNum = 5;
-        if(level >= 4 && level <= 6 && room.storage) droneNum = 2, controlNum = 3;
+        if(level >= 4 && level <= 6 && room.storage) droneNum = 1, controlNum = 3;
         if(level >= 4 && level <= 6 && room.storage && room.terminal) droneNum = 1, controlNum = 3;
         if(level >= 7) droneNum = 1, controlNum = 3;
         if(level == 8) droneNum = 1, controlNum = 1;
+        if(level < 8 && room.storage && room.storage.store.energy > 300000) controlNum = 10;
         let sources = Game.rooms[roomName].find(FIND_SOURCES);
         for(let i in sources){
             let num = 0;
@@ -43,6 +56,7 @@ module.exports = {
         }
         control.run(roomName, controlNum);
         builder.run(roomName);
+        linkCtrl.run(roomName);
         if(level >= 4 && room.storage) manager.run(roomName);
     }
 }

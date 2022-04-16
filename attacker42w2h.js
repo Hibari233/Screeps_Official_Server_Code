@@ -177,6 +177,10 @@ function creepAttack(creepCommander, creepPilot, creepSpecialist, creepEngineer,
                             }
                         }
                     }
+                    
+                    room.find(FIND_EXIT).forEach(function (exit) {
+                        costs.set(exit.x, exit.y, 50);
+                    });
 
                     for (let x = 0; x < 50; x++) {
                         for (let y = 0; y < 50; y++) {
@@ -356,7 +360,7 @@ function creepHeal(creepCommander, creepPilot, creepSpecialist, creepEngineer){
 
 function callHeal(callCreep, creepCommander, creepPilot, creepSpecialist, creepEngineer){
     if(callCreep.name != creepCommander.name && callCreep.name != creepPilot.name) callCreep.heal(callCreep);
-    if(callCreep.hits <= 4400){
+    if(callCreep.hits <= 4800){
         let callNum = (callCreep.hitsMax - callCreep.hits ) / getCreepHealBody(creepSpecialist);
         if(callNum == 1){
             if((creepSpecialist.hits + getCreepHealBody(creepSpecialist) * 12 * 3) >= creepSpecialist.hitsMax){

@@ -40,7 +40,7 @@ function creepBuild(creep) {
     }
     if(creep.store.getFreeCapacity() == 0) creep.memory.state = 1;
     if(creep.store.getUsedCapacity() == 0) creep.memory.state = 0;
-    
+    creep.memory.dontPullMe = false;
     if(creep.memory.state == 1) {
         const target = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
         if(creep.build(target) == ERR_NOT_IN_RANGE) {
@@ -49,7 +49,7 @@ function creepBuild(creep) {
     }
     else{
         if(creep.room.storage && creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 10000) withdrawFromStorage(creep);
-        else creepHarvest(creep);
+        else {creepHarvest(creep);creep.memory.dontPullMe = true;}
         
     }
 }

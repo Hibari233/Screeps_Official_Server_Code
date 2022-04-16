@@ -29,6 +29,7 @@ function creepAttack(creep, flagName) {
         let target = creep.room.lookForAt(LOOK_STRUCTURES, flag);
         let hostile_creep = creep.room.lookForAt(LOOK_CREEPS, flag);
         target = target.concat(hostile_creep);
+        //creep.rangedMassAttack();
         if(target[0]){
             if(creep.rangedAttack(target[0]) == ERR_NOT_IN_RANGE){
                 creep.moveTo(target[0], {visualizePathStyle: {stroke: '#f6b352', opacity: .5}});

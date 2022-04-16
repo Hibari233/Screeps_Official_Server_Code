@@ -9,9 +9,11 @@ module.exports = {
         let body = autoScale(roomName);
         const controller = Game.rooms[roomName].controller;
         const terminal = Game.rooms[roomName].terminal;
+        const storage = Game.rooms[roomName].storage;
         if(terminal && terminal.pos.inRangeTo(controller, 2) && controller.level < 8) {
             if(Game.time % 30 == 0) console.log('Room: ' + roomName + ' level up using terminal');
-            body = rollScale(roomName);
+            if(storage.pos.getRangeTo(controller.pos) <= 10) body = rollScale(roomName);
+            else body = parse('39w1c10m');
             creepNum = 6;
             if(terminal.store.energy < 20000) {
                 console.log(roomName + ' is buying energy');
@@ -23,7 +25,7 @@ module.exports = {
                         amountToBuy, roomName, orders[i].roomName);
 
                     if(transferEnergyCost < maxTransferEnergyCost) {
-                        Game.market.deal(orders[i].id, amountToBuy, roomName);
+                        if(orders[i].price <= 5) Game.market.deal(orders[i].id, amountToBuy, roomName);
                         break;
                     }
                 }
@@ -147,4 +149,26 @@ function autoSpawnCreep(creepName, spawnRoomName, roomName, body) {
     if(spawn) {
         spawn.spawnCreep(body, creepName, {memory: {task: 'upgrader', room: roomName}});
     }
+}
+
+function parse(str, arr = undefined) {
+    const r = /([1-9][0-9]*)?[mwcarhlt]/i;
+    if(arr === undefined){
+        arr = [];
+    }
+    let s = str.match(r);
+    if(s === null){
+        return arr;
+    }
+    let count = 1;
+    if(s[1] !== undefined){
+        count = parseInt(s[1]);
+    }
+    const dict = {m:MOVE, w:WORK, c:CARRY, a:ATTACK, r:RANGED_ATTACK, h:HEAL, l:CLAIM, t:TOUGH};
+    let t = dict[s[0][s[0].length - 1].toLowerCase()];
+    for(let i = 0; i < count; i++){
+        arr.push(t);
+    }
+
+    return parse(str.substr(s['index'] + s[0].length), arr);
 }

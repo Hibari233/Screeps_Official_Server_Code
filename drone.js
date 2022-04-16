@@ -69,7 +69,13 @@ function creepHarvest(creep, source) {
         }
     }
     else {
-        if(creep.room.storage) transferToStorage(creep);
+        let link = creep.room.find(FIND_STRUCTURES, {
+            filter: (s) => {
+                s.structureType == STRUCTURE_LINK && s.pos.inRangeTo(source.pos, 2);
+            }
+        });
+        if(link) transferToLink(creep);
+        else if(creep.room.storage) transferToStorage(creep);
         else transferToSpawn(creep);
     }
 }
@@ -103,6 +109,17 @@ function transferToContainer(creep) {
     if(container) {
         if(creep.transfer(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
             creep.moveTo(container);
+        }
+    }
+}
+
+function transferToLink(creep){
+    let link = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+        filter: (s) => s.structureType == STRUCTURE_LINK
+    });
+    if(link) {
+        if(creep.transfer(link, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(link);
         }
     }
 }

@@ -52,8 +52,18 @@ function creepBuild(creep) {
         }
     }
     else{
-        if(creep.room.storage) withdrawFromStorage(creep);
+        if(creep.room.terminal) withdrawFromTerminal(creep);
+        else if(creep.room.storage) withdrawFromStorage(creep);
         else withdrawFromSpawn(creep);
+    }
+}
+
+function withdrawFromTerminal(creep){
+    let terminal = creep.room.terminal;
+    if(terminal) {
+        if(creep.withdraw(terminal, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(terminal);
+        }
     }
 }
 

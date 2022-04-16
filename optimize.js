@@ -51,7 +51,7 @@ changelog:
 0.9.3： 取消路径反向复用避免偶发的复用非最优路径的情况，改进识别被新手墙封闭的房间，增加avoidRooms设置，
         增加远距离跨房寻路成功率，房间出口处对穿bug fix
 0.9.4:  优化路径复用避免偶发的复用非最优路径的情况，删除运行时参数中neutralCostMatrixClearDelay，
-        自动根据挡路建筑情况设置中立房间costMatrix过期时间，增加ob寻路（检查房间是否可走），
+        自动根据挡路建筑情况设置中立房间costgMatrix过期时间，增加ob寻路（检查房间是否可走），
         提供deletePathInRoom接口（使用方式见下方ps），print()中增加平均每次查找缓存时检查的路径数量统计，
         findRoute遇到过道新手墙时bugfix，偏移路径bugfix
 0.9.5： TODO：ignoreSwamp避开路，提供deletePathFromRoom、deletePathToRoom接口，增加自动visual，betterMove
